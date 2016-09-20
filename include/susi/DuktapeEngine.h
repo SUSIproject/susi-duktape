@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, webvariants GmbH, http://www.webvariants.de
+ * Copyright (c) 2016, Tino Rusch
  *
  * This file is released under the terms of the MIT license. You can find the
  * complete text in the attached LICENSE file or online at:
@@ -27,65 +27,60 @@ extern JSEngine *enginePtr;
 extern std::string susiJS;
 
 class JSEngine {
-  public:
-    JSEngine(Susi::SusiClient & susi, std::string script) :
-        _client{susi},
-        _script{script} {}
+public:
+  JSEngine(Susi::SusiClient &susi, std::string script)
+      : _client{susi}, _script{script} {}
 
-    // The start function subscribes to events and attaches its handlers
-    void start();
+  // The start function subscribes to events and attaches its handlers
+  void start();
 
-    // When stopping, all subscriptions are deleted
-    void stop();
+  // When stopping, all subscriptions are deleted
+  void stop();
 
-  protected:
-    boost::asio::io_service _ioservice;
-    Susi::SusiClient & _client;
-    std::string _script;
+protected:
+  boost::asio::io_service _ioservice;
+  Susi::SusiClient &_client;
+  std::string _script;
 
-    duk_context *ctx;
-    std::mutex mutex;
-    std::shared_ptr<boost::asio::deadline_timer> _keepAliveTimeout;
-    std::thread _runloop;
+  duk_context *ctx;
+  std::mutex mutex;
+  std::shared_ptr<boost::asio::deadline_timer> _keepAliveTimeout;
+  std::thread _runloop;
 
-    void _kickoffKeepAlive(){
-      _keepAliveTimeout.reset(new boost::asio::deadline_timer{_ioservice,boost::posix_time::seconds(5)});
-      _keepAliveTimeout->async_wait([this](const boost::system::error_code&){
-        this->_kickoffKeepAlive();
-      });
-    }
+  void _kickoffKeepAlive() {
+    _keepAliveTimeout.reset(new boost::asio::deadline_timer{
+        _ioservice, boost::posix_time::seconds(5)});
+    _keepAliveTimeout->async_wait([this](const boost::system::error_code &) {
+      this->_kickoffKeepAlive();
+    });
+  }
 
-    enum {
-        OUTPUT = 0,
-        INPUT = 1
-    };
+  enum { OUTPUT = 0, INPUT = 1 };
 
-    std::map<std::string, Susi::EventPtr> pendingEvents;
-    std::map<std::string, long> registerIdsConsumer;
-    std::map<std::string, long> registerIdsProcessor;
+  std::map<std::string, Susi::EventPtr> pendingEvents;
+  std::map<std::string, long> registerIdsConsumer;
+  std::map<std::string, long> registerIdsProcessor;
 
-    static duk_ret_t js_registerConsumer(duk_context *ctx) ;
-    static duk_ret_t js_registerProcessor(duk_context *ctx) ;
-    static duk_ret_t js_publish(duk_context *ctx) ;
-    static duk_ret_t js_ack(duk_context *ctx) ;
-    static duk_ret_t js_dismiss(duk_context *ctx) ;
-    static duk_ret_t js_log(duk_context *ctx) ;
-    static duk_ret_t js_unregisterConsumer(duk_context *ctx) ;
-    static duk_ret_t js_unregisterProcessor(duk_context *ctx) ;
-    static duk_ret_t js_setTimeout(duk_context *ctx) ;
+  static duk_ret_t js_registerConsumer(duk_context *ctx);
+  static duk_ret_t js_registerProcessor(duk_context *ctx);
+  static duk_ret_t js_publish(duk_context *ctx);
+  static duk_ret_t js_ack(duk_context *ctx);
+  static duk_ret_t js_dismiss(duk_context *ctx);
+  static duk_ret_t js_log(duk_context *ctx);
+  static duk_ret_t js_unregisterConsumer(duk_context *ctx);
+  static duk_ret_t js_unregisterProcessor(duk_context *ctx);
+  static duk_ret_t js_setTimeout(duk_context *ctx);
 
-    void registerProcessor(std::string topic);
-    void registerConsumer(std::string topic);
-    void unregisterConsumer(std::string topic);
-    void unregisterProcessor(std::string topic);
-    void publish(std::string eventData);
-    void ack(std::string eventData);
-    void dismiss(std::string eventData);
+  void registerProcessor(std::string topic);
+  void registerConsumer(std::string topic);
+  void unregisterConsumer(std::string topic);
+  void unregisterProcessor(std::string topic);
+  void publish(std::string eventData);
+  void ack(std::string eventData);
+  void dismiss(std::string eventData);
 
-    void init();
-
+  void init();
 };
-
 }
 }
 
