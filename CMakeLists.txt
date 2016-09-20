@@ -20,10 +20,14 @@ find_package(Threads REQUIRED)
 find_package(OpenSSL REQUIRED)
 find_package(Boost REQUIRED COMPONENTS system program_options)
 
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/submodules/libsusi)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/submodules/libsusi/include)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/submodules/libsusi/submodules/libbson/include)
+
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/include )
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/include/susi )
 
-set( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wall --std=c++11 -Os " )
+set( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wall --std=c++11 -O3" )
 
 file( GLOB SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/sources/DuktapeEngine.cpp
 			${CMAKE_CURRENT_SOURCE_DIR}/sources/SusiJS.cpp
